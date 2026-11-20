@@ -69,3 +69,18 @@ get /dr/US-IA "$A" | jq -c '.registry|{active_node,standby_node,epoch,last_confi
 post /dr/US-IA/failover "$A" '{"reconcile":true}' | jq -c '{from_node,to_node,epoch,confirmed_seq,discarded_unconfirmed_rows,resumed_from_seq}'
 get /regions/US-IA/status "Authorization: Bearer demo-operator-us-ia" | jq -c '{active_node,epoch,journal_head,journal_entries,handover_ready}'
 post /dr/US-IA/failback "$A" '{}' | jq -c '{from_node,to_node,epoch}'
+
+hr "field operation sequence integrity (evidence review, not work instructions)"
+OP="Authorization: Bearer demo-operator-br-mt"
+for f in seasons boundaries calendars rules facts; do
+  post "/regions/BR-MT/sequence/$f" "$OP" "@$S/sequence/br-mt-$f.json" | jq -c .
+done
+SEQ=$(post /regions/BR-MT/sequence/reviews "$OP" '{"period_from":"2026-11-01T00:00:00Z","period_to":"2026-11-30T00:00:00Z"}')
+echo "$SEQ" | jq -c '.engines[]|{engine,status,field_count,conflict_count,pending_count}'
+echo "$SEQ" | jq -c '.fields[]|{season_id,attribution_status,rule_applicability,fsm_status,po_status}'
+echo "$SEQ" | jq -c '.issues[]|{season_id,engine,severity,code}'
+SRID=$(echo "$SEQ" | jq -r .run.run_id)
+echo "only region-level stage counts leave the region:"
+post "/regions/BR-MT/sequence/reviews/$SRID/publish" "$OP" | jq -c '.publications[]|{engine,stage_counts}'
+post /sequence/coverage/rollups "$AN" '{"engine":"fsm","period_from":"2026-11-01T00:00:00Z","period_to":"2026-12-31T00:00:00Z","scope_regions":["BR-MT","DE-BB"]}' \
+  | jq -c '{included:.included_regions,excluded:.excluded_regions,stage_totals}'

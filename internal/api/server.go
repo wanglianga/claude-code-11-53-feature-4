@@ -71,6 +71,7 @@ func (s *Server) Handler() http.Handler {
 	root.Handle("/dr/", s.auth(s.mux))
 	root.Handle("/audit", s.auth(s.mux))
 	root.Handle("/audit/", s.auth(s.mux))
+	root.Handle("/sequence/", s.auth(s.mux))
 	root.Handle("/demo/", s.auth(s.mux))
 	return s.recoverPanic(s.logRequests(root))
 }
@@ -83,6 +84,21 @@ func (s *Server) routes() {
 	m.HandleFunc("/regions/{region}/operations", s.handleOperations)
 	m.HandleFunc("/regions/{region}/ingest", s.handleIngest)
 	m.HandleFunc("/regions/{region}/journal/verify", s.handleVerifyJournal)
+
+	// Field operation sequence integrity (in-region product).
+	m.HandleFunc("/regions/{region}/sequence/facts", s.handleSequenceFacts)
+	m.HandleFunc("/regions/{region}/sequence/facts/import", s.handleSequenceFactImport)
+	m.HandleFunc("/regions/{region}/sequence/seasons", s.handleSequenceSeasons)
+	m.HandleFunc("/regions/{region}/sequence/boundaries", s.handleSequenceBoundaries)
+	m.HandleFunc("/regions/{region}/sequence/calendars", s.handleSequenceCalendars)
+	m.HandleFunc("/regions/{region}/sequence/rules", s.handleSequenceRules)
+	m.HandleFunc("/regions/{region}/sequence/reviews", s.handleSequenceReviews)
+	m.HandleFunc("/regions/{region}/sequence/reviews/{id}", s.handleSequenceReview)
+	m.HandleFunc("/regions/{region}/sequence/reviews/{id}/publish", s.handleSequenceReviewPublish)
+
+	// Group-facing stage coverage: counts at approved granularity only.
+	m.HandleFunc("/sequence/coverage/publications", s.handleCoveragePublications)
+	m.HandleFunc("/sequence/coverage/rollups", s.handleCoverageRollups)
 
 	// Replication control plane.
 	m.HandleFunc("/replication/links", s.handleLinks)
@@ -874,6 +890,10 @@ func (s *Server) handleReset(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, code := range s.store.RegionCodes() {
 		if err := s.store.SeedRegionState(r.Context(), code); err != nil {
+			s.fail(w, err)
+			return
+		}
+		if err := s.svc.SeedDefaultRules(r.Context(), code); err != nil {
 			s.fail(w, err)
 			return
 		}

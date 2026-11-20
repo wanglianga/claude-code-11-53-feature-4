@@ -1,0 +1,67 @@
+{
+  "seasons": [
+    {
+      "season_id": "mt-f11-2026-maize",
+      "field_id": "MT-F-11",
+      "crop_code": "maize",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "reseeding and two fertilizer batches"
+    },
+    {
+      "season_id": "mt-f12-2026-soy",
+      "field_id": "MT-F-12",
+      "crop_code": "soybean",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "harvest evidenced before the provable seeding"
+    },
+    {
+      "season_id": "mt-f13-2026-cotton",
+      "field_id": "MT-F-13",
+      "crop_code": "cotton",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "offline backfill of an early seeding"
+    },
+    {
+      "season_id": "mt-f21-2026-maize",
+      "field_id": "MT-F-21",
+      "crop_code": "maize",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "field with a corrected boundary"
+    },
+    {
+      "season_id": "mt-f22-2026-maize",
+      "field_id": "MT-F-22",
+      "crop_code": "maize",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "field with overlapping boundary revisions"
+    },
+    {
+      "season_id": "mt-f23-2026-mix",
+      "field_id": "MT-F-23",
+      "crop_code": "maize",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "field with two crops declared in the same window"
+    },
+    {
+      "season_id": "mt-f24-2026-sorghum",
+      "field_id": "MT-F-24",
+      "crop_code": "sorghum",
+      "planned_from": "2026-11-01T08:00:00Z",
+      "planned_to": "2026-11-30T08:00:00Z",
+      "status": "active",
+      "note": "variety whose dedicated rule version was retired"
+    }
+  ]
+}

@@ -42,5 +42,8 @@ if ! curl -sf "$BASE/healthz" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "== acceptance replay =="
+echo "== acceptance replay (cross-region sync, DR, delivery audit) =="
 ./scripts/replay.sh "$BASE"
+
+echo "== acceptance replay (field operation sequence integrity) =="
+./scripts/sequence_replay.sh "$BASE"

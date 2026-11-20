@@ -1,0 +1,76 @@
+{
+  "calendars": [
+    {
+      "calendar_id": "cal-f11-maize",
+      "field_id": "MT-F-11",
+      "season_id": "mt-f11-2026-maize",
+      "crop_code": "maize",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": ""
+    },
+    {
+      "calendar_id": "cal-f12-soy",
+      "field_id": "MT-F-12",
+      "season_id": "mt-f12-2026-soy",
+      "crop_code": "soybean",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": ""
+    },
+    {
+      "calendar_id": "cal-f13-cotton",
+      "field_id": "MT-F-13",
+      "season_id": "mt-f13-2026-cotton",
+      "crop_code": "cotton",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": ""
+    },
+    {
+      "calendar_id": "cal-f21-maize",
+      "field_id": "MT-F-21",
+      "season_id": "mt-f21-2026-maize",
+      "crop_code": "maize",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": ""
+    },
+    {
+      "calendar_id": "cal-f22-maize",
+      "field_id": "MT-F-22",
+      "season_id": "mt-f22-2026-maize",
+      "crop_code": "maize",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": ""
+    },
+    {
+      "calendar_id": "cal-f23-maize",
+      "field_id": "MT-F-23",
+      "season_id": "mt-f23-2026-mix",
+      "crop_code": "maize",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": "first crop declaration"
+    },
+    {
+      "calendar_id": "cal-f23-soy",
+      "field_id": "MT-F-23",
+      "season_id": "mt-f23-2026-mix",
+      "crop_code": "soybean",
+      "valid_from": "2026-11-02T08:00:00Z",
+      "valid_until": null,
+      "note": "competing crop declaration"
+    },
+    {
+      "calendar_id": "cal-f24-sorghum",
+      "field_id": "MT-F-24",
+      "season_id": "mt-f24-2026-sorghum",
+      "crop_code": "sorghum",
+      "valid_from": "2026-11-01T08:00:00Z",
+      "valid_until": null,
+      "note": ""
+    }
+  ]
+}

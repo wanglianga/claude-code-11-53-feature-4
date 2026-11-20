@@ -2,7 +2,7 @@ SHELL := /bin/bash
 GO ?= go
 BASE ?= http://127.0.0.1:8080
 
-.PHONY: help run build test vet fmt samples replay verify clean
+.PHONY: help run build test vet fmt samples replay sequence-replay verify clean
 
 help: ## show targets
 	@grep -E '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-10s %s\n", $$1, $$2}'
@@ -24,11 +24,15 @@ test: ## unit + integration tests
 
 samples: ## regenerate sample payloads
 	python3 scripts/gen_samples.py
+	python3 scripts/gen_sequence_samples.py
 
 replay: ## run the acceptance replay against BASE
 	./scripts/replay.sh $(BASE)
 
-verify: ## full verification (build, vet, tests, replay against a throwaway server)
+sequence-replay: ## run the sequence-integrity acceptance replay against BASE
+	./scripts/sequence_replay.sh $(BASE)
+
+verify: ## full verification (build, vet, tests, both replays against a throwaway server)
 	./scripts/verify.sh
 
 clean:

@@ -242,6 +242,7 @@ func (m *Manager) Reset(ctx context.Context) error {
 		"deliveries", "aggregate_run_regions", "aggregate_runs", "outbound_requests",
 		"audit_events", "replication_runs", "replica_op_summaries", "replica_trajectories",
 		"replica_alarms", "replica_metrics",
+		"sequence_coverage_rollups", "sequence_coverage_publications",
 	}
 	for _, t := range tables {
 		if _, err := m.control.Exec(ctx, "truncate table "+t+" restart identity cascade"); err != nil {
@@ -264,7 +265,10 @@ func (m *Manager) Reset(ctx context.Context) error {
 	for _, code := range m.RegionCodes() {
 		reg, _ := m.cfg.RegionByCode(code)
 		for _, q := range []string{
-			`truncate operation_events, journal_entries, outbox_events, metric_snapshots, ingest_receipts, devices`,
+			`truncate operation_events, journal_entries, outbox_events, metric_snapshots, ingest_receipts, devices,
+			   sequence_review_issues, sequence_review_events, sequence_review_fields, sequence_review_engines,
+			   sequence_review_runs, sequence_facts, crop_calendars, field_boundary_revisions, field_seasons,
+			   agronomy_rule_sets`,
 			fmt.Sprintf(`update region_state set local_epoch=1, next_journal_seq=1, next_outbox_seq=1,
 			   active_node=%s, updated_at=now()`, quoteLiteral(reg.PrimaryNode)),
 		} {

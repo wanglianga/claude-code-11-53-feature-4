@@ -77,6 +77,15 @@ func main() {
 	cancelSeed()
 
 	svc := service.New(cfg, store)
+	ruleCtx, cancelRules := context.WithTimeout(context.Background(), 15*time.Second)
+	for _, code := range store.RegionCodes() {
+		if err := svc.SeedDefaultRules(ruleCtx, code); err != nil {
+			cancelRules()
+			log.Error("sequence rules", "region", code, "error", err)
+			os.Exit(1)
+		}
+	}
+	cancelRules()
 	srv := api.New(cfg, store, svc, log)
 	srv.UseStatic(web.Assets())
 

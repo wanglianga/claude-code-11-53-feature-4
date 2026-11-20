@@ -246,3 +246,48 @@ create table if not exists audit_events (
   hash         text not null
 );
 create index if not exists audit_events_occurred_idx on audit_events (occurred_at desc);
+
+-- =====================================================================
+-- Sequence-integrity stage coverage (group-visible, approved granularity).
+-- These tables hold NO field-level trajectories: only per-region counts of
+-- field-seasons that reached each confirmed stage. The actual per-field
+-- evidence, paths, conflicts and pending ranges stay in the region DBs.
+-- =====================================================================
+
+-- Publication of one region's stage coverage derived from one review run.
+-- Written through the policy-filtered, confirmed-replica path so the group
+-- only sees data a region explicitly released.
+create table if not exists sequence_coverage_publications (
+  id                text primary key,
+  source_region     text not null references regions(code) on delete cascade,
+  run_id            text not null,
+  version_bundle    jsonb not null,
+  fact_cutoff       timestamptz not null,
+  engine            text not null check (engine in ('fsm','partial_order')),
+  field_season_count integer not null,
+  conflict_count    integer not null,
+  pending_count     integer not null,
+  stage_counts      jsonb not null,
+  status            text not null check (status in ('unconfirmed','confirmed')),
+  copied_at         timestamptz not null default now(),
+  unique (source_region, run_id, engine)
+);
+create index if not exists sequence_coverage_pub_region_idx
+  on sequence_coverage_publications (source_region, copied_at desc);
+
+-- Group-level rollup across confirmed publications only. Field ids never
+-- appear here: the finest granularity is (region, engine, stage).
+create table if not exists sequence_coverage_rollups (
+  id              text primary key,
+  period_from     timestamptz not null,
+  period_to       timestamptz not null,
+  engine          text not null check (engine in ('fsm','partial_order')),
+  included_regions text[] not null,
+  excluded_regions text[] not null,
+  version_bundles jsonb not null,
+  stage_totals    jsonb not null,
+  region_breakdown jsonb not null,
+  data_cutoff     timestamptz not null,
+  requested_by    text not null,
+  created_at      timestamptz not null default now()
+);

@@ -1,0 +1,37 @@
+{
+  "rules": [
+    {
+      "rule_set_id": "rules-fsm-sorghum-v1",
+      "version": "rules-sorghum-v1",
+      "engine": "fsm",
+      "crop_code": "sorghum",
+      "status": "retired",
+      "rule_doc": {
+        "engine": "fsm",
+        "crop_code": "sorghum",
+        "initial_state": "unstarted",
+        "stages": [
+          "seeded",
+          "harvested"
+        ],
+        "stage_of": {
+          "seeding": "seeded",
+          "harvesting": "harvested"
+        },
+        "optional_operations": [],
+        "transitions": [
+          {
+            "from": "unstarted",
+            "on": "seeding",
+            "to": "seeded"
+          },
+          {
+            "from": "seeded",
+            "on": "harvesting",
+            "to": "harvested"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -76,10 +76,60 @@
 
 | 角色 | 可做 | 不可做 |
 | --- | --- | --- |
-| `region_operator`（绑定单一区域） | 本区域上传、本区域状态/作业/日志校验、本区域复制 | 跨区读写、全局复制、切换、聚合、审批 |
-| `group_analyst` | 提交出境申请、聚合、交付 | 审批/撤回、切换、重置、读取区域原始记录 |
+| `region_operator`（绑定单一区域） | 本区域上传、本区域状态/作业/日志校验、本区域复制、序列事实/归属/规则录入与审查、发布阶段计数 | 跨区读写、全局复制、切换、聚合、审批、集团汇总 |
+| `group_analyst` | 提交出境申请、聚合、交付、读取已发布阶段计数与构建集团汇总 | 审批/撤回、切换、重置、读取区域原始记录与田块级审查详情 |
 | `approver` | 审批、驳回、撤回 | 提交申请、交付、聚合 |
-| `auditor` | 读审计、校验 | 任何写操作 |
+| `auditor` | 读审计、校验、区域只读核查 | 任何写操作 |
 | `admin` | 链路开关、全局复制、主备切换、演示重置 | 仍受交付前置检查约束（不能绕过审计） |
 
 自批被禁止：`decide` 需要 `approver` 角色，`group_analyst` 调用返回 `403`。
+
+## 4. 田块作业序列完整性产品
+
+### 4.1 数据流（全部推导留在区域库内）
+
+```
+ 标准化作业事实 sequence_facts (event_at, received_at)
+ 田块季节归属   field_seasons / field_boundary_revisions / crop_calendars（时间版本化）
+ 农业规则       agronomy_rule_sets（fsm / partial_order，版本化，含规则内容哈希）
+                          │  创建审查运行（一次事务，只读上述输入的冻结快照）
+                          ▼
+        ┌────────────── 区域库（不出境）──────────────┐
+        │ FSM 引擎 runFSM        部分序引擎 runPartialOrder
+        │ sequence_review_fields / _events / _issues / _engines
+        │ 已确认阶段 · 允许路径 · 缺失前置 · 顺序冲突 · 待核范围
+        └───────────────────────┬───────────────────────┘
+                                 │ publish：仅 (区域,引擎,阶段)->计数
+                                 ▼
+        控制面 sequence_coverage_publications(confirmed) → sequence_coverage_rollups
+        （无 field_id / fact_id / 证据；集团可读的最细粒度）
+```
+
+### 4.2 两条推导路线
+
+| 维度 | 有限状态机 `fsm` | 部分序图 `partial_order` |
+| --- | --- | --- |
+| 规则表达 | 状态 + 迁移；`repeatable`/`alternative` 标记重复与替代 | 操作节点（max_count、min_gap、optional）+ requires/mutex 约束 |
+| 补种 | 第二次播种命中 `alternative` 迁移，解释为 `alternative` | 计数内的第二次同名操作解释为 `alternative` |
+| 多次施肥 | 施肥态上的 `repeatable` 自环，解释为 `duplicate` | 可选操作、不限次数、最小间隔，解释为 `duplicate` |
+| 收获早于可证实播种 | 当前状态无合法迁移 → `order_conflict` | 前置 `seeded` 未满足；最终化时前置仍缺或后补均判冲突 |
+| 证据缺失 | 必需阶段无事实 → `missing_prerequisites` + 待核范围 | 维护多个可行阶段（`allowed_paths` 枚举全部拓扑序），缺失前置显式列出 |
+| 复核成本 | 单一线性状态，解释直接 | 多可行阶段并存，查询/复核成本更高 |
+
+### 4.3 关键不变式
+
+| 不变式 | 实现 |
+| --- | --- |
+| 按事件时间而非接收顺序 | 事实按 `(event_at, received_at, fact_id)` 排序；离线补传仅打 `late_arrival` 标记，不产生倒序判定 |
+| 按当时有效归属 | 边界/作物声明带时间窗，按事实 `event_at` 取当时有效版本，不用当前计划回填 |
+| 迟到不否定已确认 | 新事实只追加解释；冲突事实保留 `conflict`，已确认事实不被改写 |
+| 冲突/待核不被洗白 | 互斥作物、边界重叠、语义待核、规则不适用都固定状态；完整率统计只数已确认阶段 |
+| 固定版本组合 | 每次运行冻结 `fact_version + attribution_version + 两套规则（含 SHA-256）` 为 `version_bundle` |
+| 更正可复演 | 更正只产生新运行；旧运行行不更新，`run_id` 回查恒得原结论 |
+| 出境仅计数粒度 | 发布表/汇总表无田块标识；区域详情接口对 `group_analyst` 返回 403；发布受 `aggregate_metric` 驻留政策约束 |
+| 无发布不计零 | 集团汇总对缺少 confirmed 发布的区域显式 `excluded` 并给原因 |
+
+### 4.4 判定的是数据证据，不是作业指令
+
+所有输出描述"证据是否足以解释该季作业序列"。`allowed_paths` 是规则允许的解释空间，`missing_prerequisites` 与
+`pending_ranges` 是证据缺口，`conflict` 是证据相互矛盾；它们不指示农机应当执行何种操作，也不替代农艺决策。

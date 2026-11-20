@@ -1,8 +1,12 @@
-# AgriSync — 作业数据跨地域同步与出境审计服务
+# AgriSync — 作业数据跨地域同步、出境审计与田块作业序列完整性服务
 
 跨国农机运营集团的作业数据平台。播种机、收割机、施肥机在各区域上传作业轨迹、地块面积、油耗与设备告警；
 **区域节点本地确认**，复制编排器按**数据类别 × 驻留政策**生成跨区副本，聚合服务**在区域内**计算可出境指标，
 出境审计服务在**交付前**重新核验授权与范围，容灾登记册记录每个区域的**主备角色**和**最后已确认复制位置**。
+
+此外，区域内提供**田块作业序列完整性数据产品**：把标准化作业事实、田块边界/作物季节归属、农业操作规则与
+**事件发生时间**关联，用有限状态机（FSM）与带时间约束的部分序图两条路线并行推导每块田的已确认阶段、允许的
+替代/重复操作、缺失前置证据、顺序冲突与待核范围；总部只获得获准粒度的**阶段覆盖计数**，不取得任何田块级轨迹。
 
 技术栈：Go 1.26 + PostgreSQL 18。后端服务，提供 OpenAPI 3.0.3 文档与内置（离线打包）Swagger UI。
 
@@ -66,6 +70,32 @@
 - 审计账本为哈希链（`prev_hash` + 规范化 payload），落库前对 `detail` 做 JSON 归一化、时间截断到微秒，
   保证"写入时哈希 == 读回后重算哈希"；任何越权改库都会被 `GET /audit/verify` 定位到具体行号。
 
+### 1.8 田块作业序列完整性：描述数据证据，不发出农业操作指令
+
+该产品回答的是"**现有证据能否解释这一田块本季的作业序列**"，而不是"这块田接下来该做什么"。输出是对证据完备性与
+时序一致性的判定，不构成任何播种、施肥、收获的作业指令。
+
+- **只按事件发生时间判断**：事实同时带 `event_at`（作业发生）与 `received_at`（区域收到）。设备离线补传的事件
+  `event_at` 早、`received_at` 晚，引擎一律按 `event_at` 排序；迟到事件可以**新增解释**，但不会因接收顺序把已确认
+  操作判为倒序，也不会否定既有确认（`late_arrival` 仅作标记）。
+- **按当时有效的归属判断**：田块边界与作物季节都是时间版本化的，推导只使用事件时刻有效的归属；不会拿当前作物
+  计划回填、改写当时的证据。
+- **两条设计路线并行、固定同一版本组合**：每个审查运行同时运行
+  - 有限状态机 `fsm`：按作物/季节声明的状态与迁移推进，规则直观、便于逐步解释；补种是 `alternative`、重复施肥是
+    `duplicate`，无合法迁移即顺序冲突；
+  - 带时间约束的部分序图 `partial_order`：以"操作 + 前置条件 + 时间约束"表达多施肥批次与并行准备，证据缺失时维护
+    多个可行阶段路径（`allowed_paths` 给出全部可行拓扑序），复核成本更高但表达力更强。
+  一次运行把**语义事实版本、归属版本、两套规则版本（含规则内容 SHA-256）**冻结为一个 `version_bundle`。
+- **冲突/待核保持，不为完整率选路径**：同一时段互斥作物（`mutex_crop_same_window`）、田块边界重叠
+  （`boundary_overlap`）、作业语义待核（`operation_semantics_pending`）、规则版本不适用于该品种
+  （`rule_version_not_applicable`）都会让该季保持 `conflict` 或 `pending_review`，系统不会任选一条路径把它"洗白"。
+  已被显式取代（`superseded_by` 非空）的边界是更正记录，不与新边界算重叠。
+- **更正生成新运行，旧汇总仍可复演**：规则或归属更正后新建审查运行；事实/规则/归属均版本化且运行结果整份冻结，
+  旧 `run_id` 回查永远返回当时的结论与版本组合。
+- **总部只获得获准粒度**：区域内保留田块级事实、路径、冲突证据与待核范围；发布到控制面的只有
+  `(区域, 引擎, 阶段) -> 田块季数量` 的计数，不含任何 `field_id`/`fact_id`。集团汇总只读取 `confirmed` 发布，
+  无发布的区域显式列为 `excluded` 并说明原因，不计零、不回填。
+
 ---
 
 ## 2. 快速启动
@@ -104,12 +134,13 @@ REPLICATION_INTERVAL=5s go run ./cmd/server
 ### 2.3 一键验证
 
 ```bash
-make verify            # go build + vet + 单元测试 + 起临时服务 + 105 项验收断言
-# 或对已运行实例：
+make verify            # go build + vet + 单元测试 + 起临时服务 + 两套验收回放（同步/容灾/审计 + 序列完整性）
+# 或对已运行实例分别回放：
 ./scripts/replay.sh http://localhost:8080
+./scripts/sequence_replay.sh http://localhost:8080
 ```
 
-`scripts/replay.sh` 输出逐条 `PASS/FAIL`，失败时退出码非 0。`scripts/demo.sh` 是给人读的分阶段演示（不做断言）。
+两个回放脚本都输出逐条 `PASS/FAIL`，失败时退出码非 0。`scripts/demo.sh` 是给人读的分阶段演示（不做断言）。
 
 回放脚本有少量断言需要直接查库（去重后的面积、副本行数、越权改库），默认使用
 `/opt/postgresql-18/bin/psql` 连接 `127.0.0.1:5432`（容器内预装）；在其他环境运行时可覆盖：
@@ -147,8 +178,9 @@ Swagger UI 中点击 **Authorize** 填入上述任一 token 即可调用。
 | `dr/us-ia-post-switch.json` | 主备切换后在新主节点继续上传 |
 | `approvals/wide.json` | 四区域 × 全指标的出境申请 |
 | `approvals/narrow.json` | 三区域（DE-BB/BR-MT/US-IA）× 3 指标的窄范围申请 |
+| `sequence/br-mt-*.json` | 序列完整性样例：7 个田块季，覆盖补种、两次施肥、收获早于播种、离线迟到、边界修订、边界重叠、作物冲突、规则版本不适用 |
 
-重新生成：`python3 scripts/gen_samples.py`。
+重新生成：`python3 scripts/gen_samples.py` 与 `python3 scripts/gen_sequence_samples.py`。
 
 ---
 
@@ -165,22 +197,41 @@ Swagger UI 中点击 **Authorize** 填入上述任一 token 即可调用。
 | 出境审计 | 存储字节重算哈希一致、`restricted_fields` 为空、审计条目与整链校验通过；**越权改库后** `audit/verify` 返回 `valid=false` 且 `broken_at` 指向被改行 |
 | 权限边界 | 无/错 token 401；区域操作员跨区 403；分析员自批 403；操作员触发全局复制/切换 403；集团分析读取区域原始记录 403；审计员可读区域记录用于审计 |
 
-一次完整运行的实际结果（`make verify`，2026-11-18 在本容器内执行）：
+`scripts/sequence_replay.sh` 针对序列完整性产品做独立回放（66 项断言）：
+
+| 场景 | 断言示例 |
+| --- | --- |
+| 补种 + 两次施肥 | FSM 与部分序都判 `ok`；第二次播种 `alternative`、第二次施肥 `duplicate`；部分序保留 2 条可行阶段路径 |
+| 收获早于可证实播种 | 两引擎均 `conflict`/`order_conflict`；后到的播种仍 `confirmed`，不被倒序否定 |
+| 离线迟到作业 | 迟到补传带 `late_arrival=true` 但仍 `confirmed`；事件按 `event_at` 而非接收顺序排列，序列判 `ok` |
+| 缺失前置与待核范围 | 缺收获证据的田块 `pending_review`，`missing_prerequisites` 指明阶段、`pending_ranges` 给出待核时间窗 |
+| 边界修订 | 已被 `superseded_by` 取代的旧边界不算重叠；补证据后新建运行转 `ok`，旧运行仍复演原 `pending_review` |
+| 边界重叠 / 作物冲突 | `attribution_status=conflict`，证据按两引擎各留一条；互斥作物证据同时点名 maize 与 soybean |
+| 规则版本不适用 | 品种专属规则已 `retired` 且无替代时 `rule_applicability=not_applicable`，两引擎均待核，不回退泛化规则 |
+| 出境粒度 | 发布与汇总中 0 个田块标识；集团分析读区域详情 403；无发布区域显式 `excluded` 而非计零 |
+
+一次完整运行的实际结果（`make verify`，2026-11-20 在本容器内执行，两套回放均通过）：
 
 ```
+# 跨区同步/容灾/出境审计回放
 checks passed: 105, failed: 0
 ALL CHECKS PASSED
+# 田块作业序列完整性回放
+checks passed: 66, failed: 0
+ALL SEQUENCE CHECKS PASSED
 ```
 
 ---
 
 ## 6. API 一览
 
-完整定义见 `GET /openapi.json`（OpenAPI 3.0.3，34 路径 / 36 操作），交互文档见 `/docs`。
+完整定义见 `GET /openapi.json`（OpenAPI 3.0.3，45 路径，Swagger 分组 `Sequence` 为序列产品），交互文档见 `/docs`。
 
 | 分组 | 接口 |
 | --- | --- |
 | 区域 | `POST /regions/{region}/ingest`、`GET /regions/{region}/status`、`GET /regions/{region}/operations`、`GET /regions/{region}/journal/verify`、`GET /regions` |
+| 序列（区域内） | `GET/POST /regions/{region}/sequence/facts`、`POST .../facts/import`、`GET/POST .../sequence/seasons`、`.../sequence/boundaries`、`.../sequence/calendars`、`.../sequence/rules`、`GET/POST .../sequence/reviews`、`GET .../sequence/reviews/{id}`、`POST .../sequence/reviews/{id}/publish` |
+| 序列（集团侧） | `GET /sequence/coverage/publications`、`GET/POST /sequence/coverage/rollups`（仅阶段计数，无田块数据） |
 | 复制 | `POST /replication/run`、`POST /replication/batch`、`GET /replication/cursors`、`GET /replication/runs`、`GET/POST /replication/links[/{region}]`、`GET /replication/policies`、`GET /replication/replicas` |
 | 出境申请 | `GET/POST /outbound/requests`、`GET /outbound/requests/{id}`、`POST .../decide`、`POST .../revoke` |
 | 聚合 | `GET/POST /aggregates`、`GET /aggregates/{id}` |
@@ -222,6 +273,28 @@ curl -s localhost:8080/deliveries/$DLV/verify -H 'Authorization: Bearer demo-aud
 curl -s localhost:8080/audit/verify -H 'Authorization: Bearer demo-auditor-token' | jq -c .
 ```
 
+田块作业序列完整性（区域内录入 → 双引擎审查 → 仅计数出境 → 集团汇总）：
+
+```bash
+OP='Authorization: Bearer demo-operator-br-mt'
+AN='Authorization: Bearer demo-analyst-token'
+for f in seasons boundaries calendars rules facts; do
+  curl -s -XPOST localhost:8080/regions/BR-MT/sequence/$f -H "$OP" \
+    -H 'Content-Type: application/json' --data-binary @samples/sequence/br-mt-$f.json
+done
+# 也可把已上传的作业直接标准化为事实（幂等）
+curl -s -XPOST localhost:8080/regions/BR-MT/sequence/facts/import -H "$OP"
+# 双引擎审查：返回每块田的阶段、允许路径、缺失前置、冲突与待核范围
+RID=$(curl -s -XPOST localhost:8080/regions/BR-MT/sequence/reviews -H "$OP" \
+  -H 'Content-Type: application/json' \
+  -d '{"period_from":"2026-11-01T00:00:00Z","period_to":"2026-11-30T00:00:00Z"}' | jq -r .run.run_id)
+curl -s localhost:8080/regions/BR-MT/sequence/reviews/$RID -H "$OP" | jq -c '.fields[]|{season_id,fsm_status,po_status}'
+# 区域只发布获准粒度的阶段计数；集团侧拿不到任何田块标识
+curl -s -XPOST localhost:8080/regions/BR-MT/sequence/reviews/$RID/publish -H "$OP"
+curl -s -XPOST localhost:8080/sequence/coverage/rollups -H "$AN" -H 'Content-Type: application/json' \
+  -d '{"engine":"fsm","period_from":"2026-11-01T00:00:00Z","period_to":"2026-12-31T00:00:00Z","scope_regions":["BR-MT","DE-BB"]}'
+```
+
 ---
 
 ## 8. 配置项
@@ -246,14 +319,16 @@ curl -s localhost:8080/audit/verify -H 'Authorization: Bearer demo-auditor-token
 
 ```
 cmd/server/            服务入口（含 -healthcheck 子命令，供 distroless 健康检查）
-internal/api/          HTTP 路由、鉴权、OpenAPI 文档、后台复制器
-internal/service/      区域写入/去重、复制、聚合、审批与交付、容灾、审计链
+internal/api/          HTTP 路由、鉴权、OpenAPI 文档、后台复制器（sequence.go 为序列产品接口）
+internal/service/      区域写入/去重、复制、聚合、审批与交付、容灾、审计链；
+                       sequence_*.go 为序列事实/归属/规则注册、FSM 与部分序双引擎、审查运行与覆盖发布
+internal/model/        通用模型与序列产品模型（sequence.go）
 internal/db/           PostgreSQL 连接池（每库一个）、schema、种子、重置
 internal/config/       区域/令牌/连接串配置
 web/swagger-ui/        内置 Swagger UI 资产（离线可用，Apache-2.0，见 LICENSE/NOTICE）
-samples/               多区域、断网补传、重试重叠、切换后续传、不同授权范围
-scripts/               gen_samples.py、replay.sh（断言）、demo.sh（演示）、verify.sh
-docs/architecture.md   数据流与失败模式说明
+samples/               多区域、断网补传、重试重叠、切换后续传、不同授权范围、序列六类场景（sequence/）
+scripts/               gen_samples.py、gen_sequence_samples.py、replay.sh、sequence_replay.sh、demo.sh、verify.sh
+docs/architecture.md   数据流、失败模式与序列产品说明
 ```
 
 ## 10. 已知边界

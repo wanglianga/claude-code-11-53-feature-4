@@ -1,0 +1,172 @@
+{
+  "facts": [
+    {
+      "fact_id": "fact-f11-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f11-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-11",
+      "event_at": "2026-11-02T07:00:00Z",
+      "received_at": "2026-11-02T07:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f11-seed-2",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f11-s2",
+      "operation_type": "seeding",
+      "field_id": "MT-F-11",
+      "event_at": "2026-11-04T07:00:00Z",
+      "received_at": "2026-11-04T09:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f11-fert-1",
+      "device_serial": "BR-FERT-3102",
+      "segment_id": "seq-f11-fe1",
+      "operation_type": "fertilizing",
+      "field_id": "MT-F-11",
+      "event_at": "2026-11-07T09:00:00Z",
+      "received_at": "2026-11-07T09:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f11-fert-2",
+      "device_serial": "BR-FERT-3102",
+      "segment_id": "seq-f11-fe2",
+      "operation_type": "fertilizing",
+      "field_id": "MT-F-11",
+      "event_at": "2026-11-12T09:00:00Z",
+      "received_at": "2026-11-12T09:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f11-harv-1",
+      "device_serial": "BR-HARV-2102",
+      "segment_id": "seq-f11-h1",
+      "operation_type": "harvesting",
+      "field_id": "MT-F-11",
+      "event_at": "2026-11-17T10:00:00Z",
+      "received_at": "2026-11-17T10:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f12-harv-1",
+      "device_serial": "BR-HARV-2102",
+      "segment_id": "seq-f12-h1",
+      "operation_type": "harvesting",
+      "field_id": "MT-F-12",
+      "event_at": "2026-11-03T08:00:00Z",
+      "received_at": "2026-11-03T08:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f12-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f12-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-12",
+      "event_at": "2026-11-08T07:00:00Z",
+      "received_at": "2026-11-08T07:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f13-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f13-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-13",
+      "event_at": "2026-11-02T07:00:00Z",
+      "received_at": "2026-11-12T14:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f13-fert-1",
+      "device_serial": "BR-FERT-3102",
+      "segment_id": "seq-f13-fe1",
+      "operation_type": "fertilizing",
+      "field_id": "MT-F-13",
+      "event_at": "2026-11-06T09:00:00Z",
+      "received_at": "2026-11-06T10:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f13-harv-1",
+      "device_serial": "BR-HARV-2102",
+      "segment_id": "seq-f13-h1",
+      "operation_type": "harvesting",
+      "field_id": "MT-F-13",
+      "event_at": "2026-11-16T10:00:00Z",
+      "received_at": "2026-11-16T10:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f21-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f21-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-21",
+      "event_at": "2026-11-04T07:00:00Z",
+      "received_at": "2026-11-04T07:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f22-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f22-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-22",
+      "event_at": "2026-11-04T07:00:00Z",
+      "received_at": "2026-11-04T07:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f23-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f23-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-23",
+      "event_at": "2026-11-04T07:00:00Z",
+      "received_at": "2026-11-04T07:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    },
+    {
+      "fact_id": "fact-f24-seed-1",
+      "device_serial": "BR-SEED-1102",
+      "segment_id": "seq-f24-s1",
+      "operation_type": "seeding",
+      "field_id": "MT-F-24",
+      "event_at": "2026-11-04T07:00:00Z",
+      "received_at": "2026-11-04T07:00:00Z",
+      "completed": true,
+      "batch_id": "sequence-demo",
+      "detail": {}
+    }
+  ]
+}

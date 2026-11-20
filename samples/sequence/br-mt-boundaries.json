@@ -1,0 +1,56 @@
+{
+  "boundaries": [
+    {
+      "revision_id": "br-f21-bnd-v1",
+      "field_id": "MT-F-21",
+      "valid_from": "2026-11-01T00:00:00Z",
+      "valid_until": "2026-11-09T00:00:00Z",
+      "boundary_label": "f21-original",
+      "geometry": {
+        "type": "boundary_ref",
+        "label": "f21-original"
+      },
+      "superseded_by": "br-f21-bnd-v2",
+      "note": "original boundary before the survey correction"
+    },
+    {
+      "revision_id": "br-f21-bnd-v2",
+      "field_id": "MT-F-21",
+      "valid_from": "2026-11-09T00:00:00Z",
+      "valid_until": null,
+      "boundary_label": "f21-corrected",
+      "geometry": {
+        "type": "boundary_ref",
+        "label": "f21-corrected"
+      },
+      "superseded_by": "",
+      "note": "survey correction effective Nov 9"
+    },
+    {
+      "revision_id": "br-f22-bnd-a",
+      "field_id": "MT-F-22",
+      "valid_from": "2026-11-01T00:00:00Z",
+      "valid_until": "2026-11-12T00:00:00Z",
+      "boundary_label": "f22-claim-a",
+      "geometry": {
+        "type": "boundary_ref",
+        "label": "f22-claim-a"
+      },
+      "superseded_by": "",
+      "note": "operator A claim"
+    },
+    {
+      "revision_id": "br-f22-bnd-b",
+      "field_id": "MT-F-22",
+      "valid_from": "2026-11-03T00:00:00Z",
+      "valid_until": null,
+      "boundary_label": "f22-claim-b",
+      "geometry": {
+        "type": "boundary_ref",
+        "label": "f22-claim-b"
+      },
+      "superseded_by": "",
+      "note": "operator B overlapping claim"
+    }
+  ]
+}

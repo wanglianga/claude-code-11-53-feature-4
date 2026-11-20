@@ -51,6 +51,10 @@
     {
       "name": "Demo",
       "description": "演示环境辅助接口"
+    },
+    {
+      "name": "Sequence",
+      "description": "田块作业序列完整性：区域内事实/归属/规则与双引擎审查；总部仅获得获准粒度的阶段覆盖统计"
     }
   ],
   "security": [
@@ -1245,6 +1249,851 @@
             "format": "int64"
           },
           "verified_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SequenceFactInput": {
+        "type": "object",
+        "properties": {
+          "fact_id": {
+            "type": "string"
+          },
+          "device_serial": {
+            "type": "string"
+          },
+          "segment_id": {
+            "type": "string"
+          },
+          "operation_type": {
+            "type": "string",
+            "enum": [
+              "seeding",
+              "fertilizing",
+              "harvesting",
+              "other"
+            ]
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "event_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": true
+          },
+          "batch_id": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "fact_id",
+          "device_serial",
+          "segment_id",
+          "operation_type",
+          "field_id",
+          "event_at"
+        ]
+      },
+      "SequenceFact": {
+        "type": "object",
+        "properties": {
+          "fact_id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "uploaded",
+              "imported"
+            ]
+          },
+          "device_serial": {
+            "type": "string"
+          },
+          "segment_id": {
+            "type": "string"
+          },
+          "operation_type": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "event_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "batch_id": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FieldSeasonInput": {
+        "type": "object",
+        "properties": {
+          "season_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "crop_code": {
+            "type": "string"
+          },
+          "planned_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "planned_to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "active",
+              "closed",
+              "disputed"
+            ],
+            "default": "active"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "season_id",
+          "field_id",
+          "crop_code",
+          "planned_from",
+          "planned_to"
+        ]
+      },
+      "FieldSeason": {
+        "type": "object",
+        "properties": {
+          "season_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "crop_code": {
+            "type": "string"
+          },
+          "planned_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "planned_to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BoundaryRevisionInput": {
+        "type": "object",
+        "properties": {
+          "revision_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "boundary_label": {
+            "type": "string"
+          },
+          "geometry": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "superseded_by": {
+            "type": "string",
+            "description": "被哪条修订取代；非空表示该边界是已更正的历史记录，不参与重叠冲突"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision_id",
+          "field_id",
+          "valid_from"
+        ]
+      },
+      "BoundaryRevision": {
+        "type": "object",
+        "properties": {
+          "revision_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "boundary_label": {
+            "type": "string"
+          },
+          "geometry": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "superseded_by": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CropCalendarInput": {
+        "type": "object",
+        "properties": {
+          "calendar_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "season_id": {
+            "type": "string"
+          },
+          "crop_code": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "calendar_id",
+          "field_id",
+          "season_id",
+          "crop_code",
+          "valid_from"
+        ]
+      },
+      "CropCalendar": {
+        "type": "object",
+        "properties": {
+          "calendar_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "season_id": {
+            "type": "string"
+          },
+          "crop_code": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RuleSetInput": {
+        "type": "object",
+        "properties": {
+          "rule_set_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "fsm",
+              "partial_order"
+            ]
+          },
+          "crop_code": {
+            "type": "string",
+            "description": "空字符串表示适用所有品种的泛化规则"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "active",
+              "retired"
+            ],
+            "default": "active"
+          },
+          "rule_doc": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "FSM：states/transitions/stage_of；partial_order：operations/constraints"
+          }
+        },
+        "required": [
+          "rule_set_id",
+          "version",
+          "engine",
+          "rule_doc"
+        ]
+      },
+      "RuleSet": {
+        "type": "object",
+        "properties": {
+          "rule_set_id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "crop_code": {
+            "type": "string"
+          },
+          "rule_doc": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SequenceReviewRunInput": {
+        "type": "object",
+        "properties": {
+          "period_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fsm_rule_set_id": {
+            "type": "string",
+            "description": "可选；缺省取该品种当前生效的 FSM 规则"
+          },
+          "po_rule_set_id": {
+            "type": "string",
+            "description": "可选；缺省取当前生效的部分序规则"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "period_from",
+          "period_to"
+        ]
+      },
+      "SequenceReviewRun": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "region_code": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fsm_rule_set_id": {
+            "type": "string"
+          },
+          "po_rule_set_id": {
+            "type": "string"
+          },
+          "fact_version": {
+            "type": "string"
+          },
+          "attribution_version": {
+            "type": "string"
+          },
+          "version_bundle": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "事实版本、归属版本、两套规则版本与内容哈希的固定组合"
+          },
+          "fact_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SequenceReviewEvent": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "fact_id": {
+            "type": "string"
+          },
+          "season_id": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "fsm",
+              "partial_order"
+            ]
+          },
+          "operation_type": {
+            "type": "string"
+          },
+          "event_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "interpretation": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "alternative",
+              "duplicate",
+              "conflict",
+              "pending_review",
+              "excluded"
+            ]
+          },
+          "detail": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "SequenceReviewIssue": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "season_id": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "conflict",
+              "pending_review"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "order_conflict / boundary_overlap / mutex_crop_same_window / operation_semantics_pending / rule_version_not_applicable 等"
+          },
+          "message": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "SequenceReviewField": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "season_id": {
+            "type": "string"
+          },
+          "field_id": {
+            "type": "string"
+          },
+          "crop_code": {
+            "type": "string"
+          },
+          "attribution_status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "conflict",
+              "pending_review"
+            ]
+          },
+          "rule_applicability": {
+            "type": "string",
+            "enum": [
+              "applicable",
+              "not_applicable"
+            ]
+          },
+          "fsm_state": {
+            "type": "string"
+          },
+          "fsm_status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "conflict",
+              "pending_review"
+            ]
+          },
+          "po_status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "conflict",
+              "pending_review"
+            ]
+          },
+          "fsm_confirmed_stages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "po_confirmed_stages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missing_prerequisites": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "allowed_paths": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "允许的替代/重复操作与部分序可行阶段路径"
+          },
+          "pending_ranges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "待核时间范围与原因"
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "SequenceReviewEngineRollup": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "field_count": {
+            "type": "integer"
+          },
+          "conflict_count": {
+            "type": "integer"
+          },
+          "pending_count": {
+            "type": "integer"
+          },
+          "confirmed_stage_counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "SequenceReviewDetail": {
+        "type": "object",
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/SequenceReviewRun"
+          },
+          "engines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SequenceReviewEngineRollup"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SequenceReviewField"
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SequenceReviewEvent"
+            }
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SequenceReviewIssue"
+            }
+          }
+        }
+      },
+      "StageCoveragePublication": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source_region": {
+            "type": "string"
+          },
+          "run_id": {
+            "type": "string"
+          },
+          "version_bundle": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "fact_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "engine": {
+            "type": "string",
+            "enum": [
+              "fsm",
+              "partial_order"
+            ]
+          },
+          "field_season_count": {
+            "type": "integer"
+          },
+          "conflict_count": {
+            "type": "integer"
+          },
+          "pending_count": {
+            "type": "integer"
+          },
+          "stage_counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "status": {
+            "type": "string"
+          },
+          "copied_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "唯一允许离境的序列产品：区域级阶段计数，不含任何田块标识或证据"
+      },
+      "StageCoverageRollupInput": {
+        "type": "object",
+        "properties": {
+          "engine": {
+            "type": "string",
+            "enum": [
+              "fsm",
+              "partial_order"
+            ]
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scope_regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "engine",
+          "period_from",
+          "period_to",
+          "scope_regions"
+        ]
+      },
+      "StageCoverageRollup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "period_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "included_regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excluded_regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "version_bundles": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "stage_totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "region_breakdown": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "data_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "requested_by": {
+            "type": "string"
+          },
+          "created_at": {
             "type": "string",
             "format": "date-time"
           }
@@ -2652,6 +3501,800 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/facts": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "标准化作业事实（按事件发生时间判断，迟到事件可新增解释）（区域内只读）",
+        "responses": {
+          "200": {
+            "description": "列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "facts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SequenceFactInput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "标准化作业事实（按事件发生时间判断，迟到事件可新增解释）（区域操作员写入；支持单对象或数组包装）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "facts": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/SequenceFactInput"
+                    }
+                  }
+                },
+                "required": [
+                  "facts"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "已写入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "stored": {
+                      "type": "integer"
+                    },
+                    "written": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/facts/import": {
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "把已上传的 operation_events 标准化投影为序列事实（幂等）",
+        "responses": {
+          "200": {
+            "description": "导入结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "imported": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/seasons": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "田块作物季节归属（审查单元）（区域内只读）",
+        "responses": {
+          "200": {
+            "description": "列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "seasons": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FieldSeasonInput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "田块作物季节归属（审查单元）（区域操作员写入；支持单对象或数组包装）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "seasons": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FieldSeasonInput"
+                    }
+                  }
+                },
+                "required": [
+                  "seasons"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "已写入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "stored": {
+                      "type": "integer"
+                    },
+                    "written": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/boundaries": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "田块边界修订（时间版本化；重叠即冲突，已取代的修订不算冲突）（区域内只读）",
+        "responses": {
+          "200": {
+            "description": "列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "boundary_revisions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BoundaryRevisionInput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "田块边界修订（时间版本化；重叠即冲突，已取代的修订不算冲突）（区域操作员写入；支持单对象或数组包装）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "boundaries": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/BoundaryRevisionInput"
+                    }
+                  }
+                },
+                "required": [
+                  "boundaries"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "已写入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "stored": {
+                      "type": "integer"
+                    },
+                    "written": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/calendars": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "作物日历声明（同一时段互斥作物即冲突）（区域内只读）",
+        "responses": {
+          "200": {
+            "description": "列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "crop_calendars": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CropCalendarInput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "作物日历声明（同一时段互斥作物即冲突）（区域操作员写入；支持单对象或数组包装）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "calendars": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CropCalendarInput"
+                    }
+                  }
+                },
+                "required": [
+                  "calendars"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "已写入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "stored": {
+                      "type": "integer"
+                    },
+                    "written": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/rules": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "农业操作规则集（FSM 与部分序，版本化）（区域内只读）",
+        "responses": {
+          "200": {
+            "description": "列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "rule_sets": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RuleSetInput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "农业操作规则集（FSM 与部分序，版本化）（区域操作员写入；支持单对象或数组包装）",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rules": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RuleSetInput"
+                    }
+                  }
+                },
+                "required": [
+                  "rules"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "已写入",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "stored": {
+                      "type": "integer"
+                    },
+                    "written": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/reviews": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "审查运行列表（版本组合冻结，旧运行可复演）",
+        "responses": {
+          "200": {
+            "description": "列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SequenceReviewRun"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "创建审查运行：FSM 与部分序双引擎按事件时间推导，冲突/待核保持，不为完整率任选路径",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SequenceReviewRunInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "完整审查结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceReviewDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/reviews/{id}": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "回查单次运行：已确认阶段、允许路径、缺失前置、顺序冲突与待核范围（田块级，仅区域内可见）",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Region"
+          },
+          {
+            "$ref": "#/components/parameters/RunID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "审查详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SequenceReviewDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/regions/{region}/sequence/reviews/{id}/publish": {
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "发布获准粒度的阶段覆盖统计到控制面（仅计数，无田块轨迹；受 aggregate_metric 驻留政策约束）",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Region"
+          },
+          {
+            "$ref": "#/components/parameters/RunID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "发布结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "region": {
+                      "type": "string"
+                    },
+                    "granularity": {
+                      "type": "string"
+                    },
+                    "publications": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StageCoveragePublication"
+                      }
+                    },
+                    "notice": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sequence/coverage/publications": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "集团侧：各区域已发布的阶段覆盖（计数粒度，无田块级数据）",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "发布列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "publications": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StageCoveragePublication"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/sequence/coverage/rollups": {
+      "get": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "集团侧：历史跨区阶段覆盖汇总列表",
+        "responses": {
+          "200": {
+            "description": "汇总列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rollups": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StageCoverageRollup"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sequence"
+        ],
+        "summary": "基于已确认发布构建跨区汇总；无发布的区域显式排除并说明，不计零、不回填",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StageCoverageRollupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "汇总",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StageCoverageRollup"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           }
         }
       }
